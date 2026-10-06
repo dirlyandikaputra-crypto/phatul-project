@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Toko Baju dan Sepatu - Katalog Modern</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+
+    // Data Produk
+    const PRODUCTS_DATA = [
+      {
+        id: 1,
+        name: "Kemeja Oversized Linen Casual",
+        category: "baju",
+        price: 189000,
+        originalPrice: 249000,
+        rating: 4.8,
+        reviews: 124,
+        image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&auto=format&fit=crop&q=80",
+        description: "Kemeja linen bergaya oversized yang sejuk dan nyaman untuk dipakai sehari-hari. Cocok untuk tampilan santai maupun semi-formal.",
+        sizes: ["S", "M", "L", "XL"],
+        colors: ["White", "Beige", "Olive"],
+        isNew: true,
+        bestSeller: false
+      },
+      {
+        id: 2,
+        name: "Sneakers Streetwear Minimalis",
+        category: "sepatu",
+        price: 459000,
+        originalPrice: 599000,
+        rating: 4.9,
+        reviews: 210,
+        image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&auto=format&fit=crop&q=80",
+        description: "Sneakers kulit sintetis premium dengan sol empuk. Desain bersih dan serbaguna untuk padu padan busana apapun.",
+        sizes: ["39", "40", "41", "42", "43"],
+        colors: ["White/Black", "Full White"],
+        isNew: false,
+        bestSeller: true
+      },
+      {
+        id: 3,
+        name: "Jaket Denim Vintage Classic",
+        category: "baju",
+        price: 329000,
+        originalPrice: 399000,
+        rating: 4.7,
+        reviews: 89,
+        image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&auto=format&fit=crop&q=80",
+        description: "Jaket denim tebal berkualitas tinggi dengan efek washing vintage. Tahan lama dan tak pernah ketinggalan zaman.",
+        sizes: ["M", "L", "XL"],
+        colors: ["Blue Wash", "Dark Blue"],
+        isNew: false,
+        bestSeller: false
+      },
+      {
+        id: 4,
+        name: "Sepatu Lari Slip-On Responsive",
+        category: "sepatu",
+        price: 389000,
+        originalPrice: 489000,
+        rating: 4.8,
+        reviews: 156,
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80",
+        description: "Sepatu olahraga ringan dengan bantalan responsif. Ideal untuk joging harian maupun aktivitas berintensitas tinggi.",
+        sizes: ["38", "39", "40", "41", "42", "43"],
+        colors: ["Red/White", "All Black"],
+        isNew: true,
+        bestSeller: true
+      },
+      {
+        id: 5,
+        name: "Kaos Polo Cotton Pique",
+        category: "baju",
+        price: 129000,
+        originalPrice: 169000,
+        rating: 4.6,
+        reviews: 78,
+        image: "https://images.unsplash.com/photo-1625910513413-5fc281be4300?w=600&auto=format&fit=crop&q=80",
+        description: "Kaos polo berbahan katun pique 100% yang menyerap keringat dengan baik. Tampil rapi tanpa mengorbankan kenyamanan.",
+        sizes: ["S", "M", "L", "XL", "XXL"],
+        colors: ["Navy", "Black", "Maroon"],
+        isNew: false,
+        bestSeller: false
+      },
+      {
+        id: 6,
+        name: "Sepatu Loafers Kulit Formal",
+        category: "sepatu",
+        price: 529000,
+        originalPrice: 699000,
+        rating: 4.9,
+        reviews: 95,
+        image: "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=600&auto=format&fit=crop&q=80",
+        description: "Loafers elegan dari bahan kulit asli. Pilihan sempurna untuk acara formal, kantor, maupun gaya smart-casual.",
+        sizes: ["40", "41", "42", "43", "44"],
+        colors: ["Brown", "Black"],
+        isNew: true,
+        bestSeller: false
+      },
+      {
+        id: 7,
+        name: "Hoodie Fleece Essential Minimalis",
+        category: "baju",
+        price: 249000,
+        originalPrice: 299000,
+        rating: 4.9,
+        reviews: 310,
+        image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80",
+        description: "Hoodie hangat dari bahan cotton fleece tebal dan lembut. Dilengkapi kantong kangguru dan tali serut tahan lama.",
+        sizes: ["M", "L", "XL"],
+        colors: ["Grey", "Black", "Sage Green"],
+        isNew: false,
+        bestSeller: true
+      },
+      {
+        id: 8,
+        name: "Sepatu High-Top Canvas Retro",
+        category: "sepatu",
+        price: 299000,
+        originalPrice: 379000,
+        rating: 4.7,
+        reviews: 142,
+        image: "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=600&auto=format&fit=crop&q=80",
+        description: "Sepatu kanvas model tinggi bergaya klasik retro. Sol karet fleksibel dengan daya cengkeram kuat.",
+        sizes: ["37", "38", "39", "40", "41", "42"],
+        colors: ["Black/White", "Navy"],
+        isNew: false,
+        bestSeller: false
+      }
+    ];
+
+    // Format Rupiah
+    const formatRupiah = (number) => {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0
+      }).format(number);
+    };
+
+    function App() {
+      const [category, setCategory] = useState('all');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [sortBy, setSortBy] = useState('featured');
+      const [cart, setCart] = useState([]);
+      const [isCartOpen, setIsCartOpen] = useState(false);
+      const [selectedProduct, setSelectedProduct] = useState(null);
+      const [notification, setNotification] = useState('');
+
+      // Show Notification Toast
+      const showToast = (msg) => {
+        setNotification(msg);
+        setTimeout(() => setNotification(''), 3000);
+      };
+
+      // Filter & Sort Products
+      const filteredProducts = useMemo(() => {
+        return PRODUCTS_DATA
+          .filter(product => {
+            const matchesCategory = category === 'all' || product.category === category;
+            const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                  product.description.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesCategory && matchesSearch;
+          })
+          .sort((a, b) => {
+            if (sortBy === 'price-low') return a.price - b.price;
+            if (sortBy === 'price-high') return b.price - a.price;
+            if (sortBy === 'rating') return b.rating - a.rating;
+            return b.id - a.id; // Default / Featured
+          });
+      }, [category, searchQuery, sortBy]);
+
+      // Cart Actions
+      const addToCart = (product, size = null, color = null) => {
+        const selectedSize = size || product.sizes[0];
+        const selectedColor = color || product.colors[0];
+        const cartItemId = `${product.id}-${selectedSize}-${selectedColor}`;
+
+        setCart(prevCart => {
+          const existingIndex = prevCart.findIndex(item => item.cartItemId === cartItemId);
+          if (existingIndex > -1) {
+            const updated = [...prevCart];
+            updated[existingIndex].quantity += 1;
+            return updated;
+          } else {
+            return [...prevCart, {
+              ...product,
+              cartItemId,
+              selectedSize,
+              selectedColor,
+              quantity: 1
+            }];
+          }
+        });
+
+        showToast(`"${product.name}" telah ditambahkan ke keranjang!`);
+      };
+
+      const updateQuantity = (cartItemId, delta) => {
+        setCart(prevCart => {
+          return prevCart.map(item => {
+            if (item.cartItemId === cartItemId) {
+              const newQty = item.quantity + delta;
+              return newQty > 0 ? { ...item, quantity: newQty } : null;
+            }
+            return item;
+          }).filter(Boolean);
+        });
+      };
+
+      const removeFromCart = (cartItemId) => {
+        setCart(prevCart => prevCart.filter(item => item.cartItemId !== cartItemId));
+        showToast("Produk dihapus dari keranjang.");
+      };
+
+      const cartTotal = useMemo(() => {
+        return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      }, [cart]);
+
+      const cartCount = useMemo(() => {
+        return cart.reduce((sum, item) => sum + item.quantity, 0);
+      }, [cart]);
+
+      return (
+        <div className="min-h-screen flex flex-col">
+          {/* Toast Notification */}
+          {notification && (
+            <div className="fixed top-20 right-4 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg flex items-center space-x-3 transition-all duration-300 transform translate-y-0">
+              <i className="fa-solid fa-circle-check text-xl"></i>
+              <span className="font-medium text-sm">{notification}</span>
+            </div>
+          )}
+
+          {/* Navigation Bar */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+              {/* Logo */}
+              <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { setCategory('all'); setSearchQuery(''); }}>
+                <div className="bg-slate-900 text-white p-2.5 rounded-xl shadow-sm">
+                  <i className="fa-solid fa-bag-shopping text-xl"></i>
+                </div>
+                <div>
+                  <h1 className="text-xl font-extrabold tracking-tight text-slate-900 leading-none">
+                    BUSANA<span className="text-indigo-600">&</span>Lステップ
+                  </h1>
+                  <p className="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Toko Baju & Sepatu</p>
+                </div>
+              </div>
+
+              {/* Search Bar - Desktop */}
+              <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
+                <input
+                  type="text"
+                  placeholder="Cari baju, sepatu, atau gaya favoritmu..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-100 text-slate-800 pl-11 pr-4 py-2.5 rounded-full border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all text-sm"
+                />
+                <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <i className="fa-solid fa-xmark"></i>
+                  </button>
+                )}
+              </div>
+
+              {/* Cart Button */}
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative bg-slate-100 hover:bg-slate-200 text-slate-800 p-3 rounded-full transition-colors flex items-center justify-center focus:outline-none"
+                  aria-label="Keranjang Belanja"
+                >
+                  <i className="fa-solid fa-cart-shopping text-lg"></i>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Search Bar */}
+            <div className="md:hidden px-4 pb-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari produk..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-100 text-slate-800 pl-10 pr-4 py-2 rounded-full border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none text-sm"
+                />
+                <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              </div>
+            </div>
+          </header>
+
+          {/* Banner Hero */}
+          <section className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="text-center md:text-left space-y-4 max-w-xl">
+                <span className="bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-3.5 py-1.5 rounded-full border border-indigo-500/30 uppercase tracking-wider">
+                  Koleksi Musim Terbaru
+                </span>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">
+                  Tampil Percaya Diri dengan Gaya Terbaik
+                </h2>
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                  Temukan kombinasi pakaian trendi dan sepatu berkualitas tinggi untuk melengkapi setiap momen spesialmu.
+                </p>
+                <div className="pt-2 flex flex-wrap gap-3 justify-center md:justify-start">
+                  <button 
+                    onClick={() => { setCategory('baju'); }}
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 transition-all text-sm flex items-center space-x-2"
+                  >
+                    <i className="fa-solid fa-shirt"></i>
+                    <span>Koleksi Baju</span>
+                  </button>
+                  <button 
+                    onClick={() => { setCategory('sepatu'); }}
+                    className="bg-white/10 hover:bg-white/20 text-white font-medium px-5 py-2.5 rounded-xl backdrop-blur-sm border border-white/10 transition-all text-sm flex items-center space-x-2"
+                  >
+                    <i className="fa-solid fa-shoe-prints"></i>
+                    <span>Koleksi Sepatu</span>
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 max-w-md w-full">
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm flex items-center space-x-3">
+                  <div className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl">
+                    <i className="fa-solid fa-truck-fast text-xl"></i>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Pengiriman Cepat</h4>
+                    <p className="text-xs text-slate-400">Ke seluruh Indonesia</p>
+                  </div>
+                </div>
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm flex items-center space-x-3">
+                  <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl">
+                    <i className="fa-solid fa-shield-halved text-xl"></i>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Produk Original</h4>
+                    <p className="text-xs text-slate-400">Garansi Kualitas 100%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Main Content Area */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+            {/* Filter & Sorting Controls */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-200">
+              {/* Category Tabs */}
+              <div className="flex items-center space-x-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 custom-scrollbar">
+                <button
+                  onClick={() => setCategory('all')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center space-x-2 ${
+                    category === 'all'
+                      ? 'bg-slate-900 text-white shadow-md'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <i className="fa-solid fa-border-all"></i>
+                  <span>Semua Produk</span>
+                </button>
+                <button
+                  onClick={() => setCategory('baju')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center space-x-2 ${
+                    category === 'baju'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <i className="fa-solid fa-shirt"></i>
+                  <span>Baju & Pakaian</span>
+                </button>
+                <button
+                  onClick={() => setCategory('sepatu')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center space-x-2 ${
+                    category === 'sepatu'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <i className="fa-solid fa-shoe-prints"></i>
+                  <span>Sepatu & Alas Kaki</span>
+                </button>
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Urutkan:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-sm"
+                >
+                  <option value="featured">Paling Populer</option>
+                  <option value="price-low">Harga: Rendah ke Tinggi</option>
+                  <option value="price-high">Harga: Tinggi ke Rendah</option>
+                  <option value="rating">Rating Tertinggi</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Catalog Grid */}
+            {filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map(product => (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group"
+                  >
+                    {/* Image Container */}
+                    <div className="relative aspect-square overflow-hidden bg-slate-100 cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      
+                      {/* Badges */}
+                      <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                        {product.isNew && (
+                          <span className="bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                            Baru
+                          </span>
+                        )}
+                        {product.bestSeller && (
+                          <span className="bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                            Terlaris
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Quick Detail Overlay */}
+                      <div className="absolute inset-0 bg-slate-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="bg-white text-slate-900 text-xs font-bold px-4 py-2 rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                          Lihat Detail
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-5 flex-1 flex flex-col justify-between">
+                      <div>
+                        {/* Rating & Category */}
+                        <div className="flex items-center justify-between text-xs mb-2">
+                          <span className="font-semibold text-indigo-600 uppercase tracking-wider text-[10px]">
+                            {product.category}
+                          </span>
+                          <div className="flex items-center space-x-1 text-amber-500">
+                            <i className="fa-solid fa-star text-xs"></i>
+                            <span className="font-bold text-slate-700">{product.rating}</span>
+                            <span className="text-slate-400">({product.reviews})</span>
+                          </div>
+                        </div>
+
+                        {/* Title */}
+                        <h3 
+                          onClick={() => setSelectedProduct(product)}
+                          className="font-bold text-slate-900 text-base hover:text-indigo-600 transition-colors line-clamp-2 cursor-pointer mb-2"
+                        >
+                          {product.name}
+                        </h3>
+                      </div>
+
+                      {/* Price & Action */}
+                      <div className="pt-4 border-t border-slate-100 mt-3 flex items-center justify-between gap-2">
+                        <div>
+                          <div className="text-xs text-slate-400 line-through">
+                            {formatRupiah(product.originalPrice)}
+                          </div>
+                          <div className="text-lg font-extrabold text-slate-900">
+                            {formatRupiah(product.price)}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => addToCart(product)}
+                          className="bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white p-3 rounded-xl transition-all duration-200 flex items-center justify-center focus:outline-none"
+                          title="Tambah ke Keranjang"
+                        >
+                          <i className="fa-solid fa-cart-plus text-base"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Empty State */
+              <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200 max-w-lg mx-auto my-8">
+                <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                  <i className="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">Produk Tidak Ditemukan</h3>
+                <p className="text-sm text-slate-500 mb-6 max-w-xs mx-auto">
+                  Coba ubah kata kunci pencarian atau ganti kategori produk yang Anda pilih.
+                </p>
+                <button
+                  onClick={() => { setCategory('all'); setSearchQuery(''); }}
+                  className="bg-indigo-600 text-white font-medium px-5 py-2.5 rounded-xl text-sm hover:bg-indigo-700 transition-colors"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            )}
+          </main>
+
+          {/* Product Detail Modal */}
+          {selectedProduct && (
+            <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
+                {/* Close Button */}
+                <button
+                  onClick={() => setSelectedProduct(null)}
+                  className="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white text-slate-600 p-2 rounded-full shadow-md transition-colors"
+                >
+                  <i className="fa-solid fa-xmark text-lg w-5 h-5 flex items-center justify-center"></i>
+                </button>
+
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                  {/* Image */}
+                  <div className="aspect-square bg-slate-100">
+                    <img
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Details */}
+                  <div className="p-6 flex flex-col justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                        {selectedProduct.category}
+                      </span>
+                      <h2 className="text-xl font-bold text-slate-900 mt-1 mb-2">
+                        {selectedProduct.name}
+                      </h2>
+
+                      {/* Rating */}
+                      <div className="flex items-center space-x-2 mb-4">
+                        <div className="flex text-amber-400 text-xs">
+                          <i className="fa-solid fa-star"></i>
+                          <i className="fa-solid fa-star"></i>
+                          <i className="fa-solid fa-star"></i>
+                          <i className="fa-solid fa-star"></i>
+                          <i className="fa-solid fa-star"></i>
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">{selectedProduct.rating}</span>
+                        <span className="text-xs text-slate-400">({selectedProduct.reviews} ulasan)</span>
+                      </div>
+
+                      <p className="text-xs text-slate-600 leading-relaxed mb-6">
+                        {selectedProduct.description}
+                      </p>
+
+                      {/* Sizes */}
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold text-slate-700 mb-2">Pilih Ukuran:</label>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedProduct.sizes.map(size => (
+                            <span key={size} className="px-3 py-1.5 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium hover:border-indigo-600 hover:text-indigo-600 cursor-pointer transition-colors">
+                              {size}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Colors */}
+                      <div className="mb-6">
+                        <label className="block text-xs font-semibold text-slate-700 mb-2">Warna Tersedia:</label>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedProduct.colors.map(color => (
+                            <span key={color} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs">
+                              {color}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      {/* Price & Add Button */}
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-100 mb-4">
+                        <div>
+                          <div className="text-xs text-slate-400 line-through">
+                            {formatRupiah(selectedProduct.originalPrice)}
+                          </div>
+                          <div className="text-xl font-extrabold text-slate-900">
+                            {formatRupiah(selectedProduct.price)}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          addToCart(selectedProduct);
+                          setSelectedProduct(null);
+                        }}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-600/30 transition-all text-sm flex items-center justify-center space-x-2"
+                      >
+                        <i className="fa-solid fa-cart-plus"></i>
+                        <span>Tambah ke Keranjang</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cart Drawer Slide-Over */}
+          {isCartOpen && (
+            <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-sm">
+              <div className="absolute inset-0" onClick={() => setIsCartOpen(false)}></div>
+              <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+                <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+                  {/* Cart Header */}
+                  <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <i className="fa-solid fa-bag-shopping text-xl text-indigo-600"></i>
+                      <h2 className="text-lg font-bold text-slate-900">Keranjang Belanja</h2>
+                      <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                        {cartCount}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsCartOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 p-2"
+                    >
+                      <i className="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                  </div>
+
+                  {/* Cart Items List */}
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                    {cart.length > 0 ? (
+                      cart.map(item => (
+                        <div
+                          key={item.cartItemId}
+                          className="flex space-x-4 p-3 bg-slate-50 rounded-2xl border border-slate-100 relative group"
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-20 h-20 object-cover rounded-xl bg-slate-200"
+                          />
+                          <div className="flex-1 flex flex-col justify-between">
+                            <div>
+                              <h4 className="font-bold text-slate-900 text-sm line-clamp-1">{item.name}</h4>
+                              <p className="text-xs text-slate-500 mt-0.5">
+                                Ukuran: <span className="font-semibold text-slate-700">{item.selectedSize}</span> | Warna: <span className="font-semibold text-slate-700">{item.selectedColor}</span>
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="font-extrabold text-slate-900 text-sm">
+                                {formatRupiah(item.price)}
+                              </span>
+                              
+                              {/* Quantity Controls */}
+                              <div className="flex items-center border border-slate-200 rounded-lg bg-white">
+                                <button
+                                  onClick={() => updateQuantity(item.cartItemId, -1)}
+                                  className="px-2 py-1 text-slate-600 hover:text-indigo-600 text-xs"
+                                >
+                                  <i className="fa-solid fa-minus"></i>
+                                </button>
+                                <span className="px-2 text-xs font-bold text-slate-800">{item.quantity}</span>
+                                <button
+                                  onClick={() => updateQuantity(item.cartItemId, 1)}
+                                  className="px-2 py-1 text-slate-600 hover:text-indigo-600 text-xs"
+                                >
+                                  <i className="fa-solid fa-plus"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Delete Item */}
+                          <button
+                            onClick={() => removeFromCart(item.cartItemId)}
+                            className="text-slate-400 hover:text-rose-500 p-1 self-start"
+                            title="Hapus"
+                          >
+                            <i className="fa-solid fa-trash-can text-xs"></i>
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-16">
+                        <i className="fa-solid fa-cart-flatbed text-4xl text-slate-300 mb-3"></i>
+                        <p className="text-slate-500 font-medium text-sm">Keranjang Anda masih kosong</p>
+                        <p className="text-slate-400 text-xs mt-1">Yuk, temukan baju dan sepatu impianmu sekarang!</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cart Footer / Checkout */}
+                  {cart.length > 0 && (
+                    <div className="p-6 border-t border-slate-100 bg-slate-50/50 space-y-4">
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex justify-between text-slate-500">
+                          <span>Subtotal</span>
+                          <span>{formatRupiah(cartTotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-500">
+                          <span>Estimasi Ongkir</span>
+                          <span className="text-emerald-600 font-medium">GRATIS</span>
+                        </div>
+                        <div className="flex justify-between text-slate-900 font-extrabold text-base pt-2 border-t border-slate-200">
+                          <span>Total Pembayaran</span>
+                          <span className="text-indigo-600">{formatRupiah(cartTotal)}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          alert(`Terima kasih! Pesanan Anda senilai ${formatRupiah(cartTotal)} berhasil diproses.`);
+                          setCart([]);
+                          setIsCartOpen(false);
+                        }}
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center space-x-2"
+                      >
+                        <span>Lanjut ke Pembayaran</span>
+                        <i className="fa-solid fa-arrow-right"></i>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <footer className="bg-slate-900 text-slate-400 text-xs border-t border-slate-800 mt-auto">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center space-x-2 text-white font-bold">
+                <i className="fa-solid fa-bag-shopping text-indigo-500"></i>
+                <span>Toko Baju dan Sepatu</span>
+              </div>
+              <p>© 2026 Toko Baju dan Sepatu. Hak Cipta Dilindungi Undang-Undang.</p>
+              <div className="flex space-x-4 text-base">
+                <a href="#" className="hover:text-white transition-colors"><i className="fa-brands fa-instagram"></i></a>
+                <a href="#" className="hover:text-white transition-colors"><i className="fa-brands fa-tiktok"></i></a>
+                <a href="#" className="hover:text-white transition-colors"><i className="fa-brands fa-whatsapp"></i></a>
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
